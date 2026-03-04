@@ -1,0 +1,16 @@
+/* Пример конфигурации — копия генерируется pre_build_config.py в config.h */
+#ifndef SMLS_CONFIG_H
+#define SMLS_CONFIG_H
+#define SMLS_MASTER 1
+#define I2C_SDA 21
+#define I2C_SCL 22
+#define PIN_HALL 34
+#define PIN_JOY_X 32
+#define PIN_JOY_Y 33
+#define PIN_JOY_SW 25
+#define PIN_BTN_1 0
+#define PIN_BTN_2 2
+#define PIN_LED_1 4
+#define PIN_LED_2 15
+#define PIN_BTN_CALIB 0
+#endif

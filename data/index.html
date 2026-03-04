@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMLS — панель управления</title>
+    <style>
+        body { font-family: sans-serif; margin: 1rem; background: #1a1a2e; color: #eee; }
+        h1 { font-size: 1.2rem; }
+        .panel { display: grid; gap: 0.5rem; max-width: 320px; }
+        .row { display: flex; justify-content: space-between; align-items: center; }
+        .label { font-weight: bold; }
+        .value { font-family: monospace; }
+        .btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .btns button { padding: 0.5rem 0.8rem; cursor: pointer; border: 1px solid #444; background: #333; color: #fff; border-radius: 4px; }
+        .btns button:active { background: #555; }
+        #status { margin-top: 1rem; font-size: 0.9rem; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h1>SMLS — Smart Motion Light System</h1>
+    <div class="panel">
+        <div class="row"><span class="label">Скорость LS:</span><span class="value" id="ls">—</span></div>
+        <div class="row"><span class="label">Ускорение ACCEL:</span><span class="value" id="accel">—</span></div>
+        <div class="row"><span class="label">Обороты CNT:</span><span class="value" id="cnt">—</span></div>
+        <div class="row"><span class="label">Режим:</span><span class="value" id="mode">—</span></div>
+        <div class="row"><span class="label">ФС:</span><span class="value" id="fs">—</span></div>
+        <div class="row"><span class="label">Лог:</span><span class="value" id="log">—</span></div>
+    </div>
+    <div class="btns">
+        <button data-mode="GO">GO</button>
+        <button data-mode="STOP">STOP</button>
+        <button data-mode="LEFT">LEFT</button>
+        <button data-mode="RIGHT">RIGHT</button>
+        <button data-mode="SOS">SOS</button>
+        <button id="btnTest">TEST</button>
+        <button id="btnCalib">Калибровка</button>
+        <button id="btnLogOn">Лог вкл</button>
+        <button id="btnLogOff">Лог выкл</button>
+    </div>
+    <div id="status"></div>
+    <script>
+        const lsEl = document.getElementById('ls');
+        const accelEl = document.getElementById('accel');
+        const cntEl = document.getElementById('cnt');
+        const modeEl = document.getElementById('mode');
+        const fsEl = document.getElementById('fs');
+        const logEl = document.getElementById('log');
+        const statusEl = document.getElementById('status');
+
+        function fetchStatus() {
+            fetch('/api/status')
+                .then(r => r.json())
+                .then(d => {
+                    lsEl.textContent = d.ls != null ? d.ls : '—';
+                    accelEl.textContent = d.accel != null ? d.accel : '—';
+                    cntEl.textContent = d.cnt != null ? d.cnt : '—';
+                    modeEl.textContent = d.mode || '—';
+                    fsEl.textContent = d.fsReady ? 'OK' : 'ERR';
+                    logEl.textContent = d.logging ? 'вкл' : 'выкл';
+                })
+                .catch(() => { statusEl.textContent = 'Ошибка запроса'; });
+        }
+
+        function post(url, body) {
+            return fetch(url, { method: 'POST', body: body || null, headers: body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {} });
+        }
+
+        document.querySelectorAll('[data-mode]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const m = btn.getAttribute('data-mode');
+                post('/api/mode', 'm=' + m).then(() => fetchStatus()).catch(() => {});
+            });
+        });
+        document.getElementById('btnTest').addEventListener('click', () => post('/api/test').then(() => fetchStatus()).catch(() => {}));
+        document.getElementById('btnCalib').addEventListener('click', () => post('/api/calibrate').then(() => { statusEl.textContent = 'Калибровка запущена'; }).catch(() => {}));
+        document.getElementById('btnLogOn').addEventListener('click', () => post('/api/logging', 'en=1').then(() => fetchStatus()).catch(() => {}));
+        document.getElementById('btnLogOff').addEventListener('click', () => post('/api/logging', 'en=0').then(() => fetchStatus()).catch(() => {}));
+
+        setInterval(fetchStatus, 500);
+        fetchStatus();
+    </script>
+</body>
+</html>

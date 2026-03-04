@@ -1,0 +1,20 @@
+# Сгенерированный pre-build скриптом
+include/config.h
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+build/
+*.zip
+
+# Среда
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
